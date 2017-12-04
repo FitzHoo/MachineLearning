@@ -142,3 +142,32 @@ def plotBestFit(weights):
     plt.ylabel("X2")
     plt.show()
 
+
+# ————--------------------------------------------------------------------------
+def plot_sigmoid_function():
+    z = np.arange(-7, 7, 0.1)
+    phi_z = sigmoid(z)
+    plt.plot(z, phi_z)
+    plt.axvline(0.0, color='k')
+    plt.axhspan(0.0, 1.0, facecolor='1.0', alpha=1.0, ls='dotted')
+    plt.axhline(y=0.5, ls='dotted', color='k')
+    plt.yticks([0.0, 0.5, 1.0])
+    plt.ylim(-0.1, 1.1)
+    plt.xlabel('z')
+    plt.ylabel('$\phi (z)$')
+    plt.show()
+    return
+
+
+# 不同phi_z取值对单一示例样本分类代价图
+def plot_loss_function():
+    z = np.arange(-7, 7, 0.1)
+    phi_z = sigmoid(z)
+    plt.plot(phi_z, -np.log(phi_z), ls='dotted')
+    plt.plot(phi_z, -np.log(1 - phi_z))
+
+    plt.xlabel('$\phi(z)$')
+    plt.ylabel('J(w)')
+    plt.title('Single instance loss function')
+    return plt.show()
+
