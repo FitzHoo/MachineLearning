@@ -140,6 +140,10 @@ class SBS(object):
             best = np.argmax(scores)
             self.indices_ = subsets[best]
             self.subsets_.append(self.indices_)
+
+            dim -= 1
+            self.scores_.append(scores[best])
+
         self.k_score_ = self.scores_[-1]
 
         return self
@@ -158,8 +162,41 @@ from sklearn.neighbors import KNeighborsClassifier
 knn = KNeighborsClassifier(n_neighbors=2)
 sbs = SBS(knn, k_features=1)
 sbs.fit(X_train_std, y_train)
+k_feat = [len(k) for k in sbs.subsets_]
+plt.plot(k_feat, sbs.scores_, marker='o')
+plt.ylim([0.7, 1.1])
+plt.ylabel('Accuracy')
+plt.xlabel('Number of features')
+plt.grid()
+plt.show()
+
+# Test the top five significant features
+k5 = list(sbs.subsets_[8])   # 8 = 13 - 5
+print(wine_df.columns[k5])
+
+knn.fit(X_train_std, y_train)
+print("Training Accuracy:", knn.score(X_train_std, y_train))
+print('Test Accuracy:', knn.score(X_test_std, y_test))
+
+knn.fit(X_train_std[:, k5], y_train)
+print("Training Accuracy:", knn.score(X_train_std[:, k5], y_train))
+print('Test Accuracy:', knn.score(X_test_std[:, k5], y_test))
 
 
+# judge the feature importance by random forest
+from sklearn.ensemble import RandomForestClassifier
+feat_labels = wine_df.columns[:-1]
+forest = RandomForestClassifier(n_estimators=10000, random_state=0, n_jobs=-1)
+forest.fit(X_train, y_train)
+importances = forest.feature_importances_
+indicies = np.argsort(importances)[::-1]
+for f in range(X_train.shape[1]):
+    print('%2d) %-*s %f' %(f+1, 30, feat_labels[f], importances[indicies[f]]))
 
+plt.title("Feature Importances")
+plt.bar(range(X_train.shape[1]), importances[indicies], color='lightblue', align='center')
+plt.xticks(range(X_train.shape[1]), feat_labels, rotation=90)
+plt.tight_layout()
+plt.show()
 
 
