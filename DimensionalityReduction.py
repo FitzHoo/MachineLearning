@@ -130,16 +130,128 @@ for label in range(3):
     mean_vecs.append(np.mean(X_train_std[y_train == label], axis=0))
     print('mean vector {}: \n {} \n '.format(label, mean_vecs[label]))
 
-# Step 2: 计算类内散步矩阵
+# Step 2: 计算类内散布矩阵
 num = len(np.unique(y))
 d = X_train_std.shape[1]
+# S_W = np.zeros((d, d))
+# for label, mv in zip(range(num), mean_vecs):
+#     class_scatter = np.zeros((d, d))
+#     for row in X[y == label]:
+#         row, mv = row.reshape(d, 1), mv.reshape(d, 1)
+#         class_scatter += (row - mv).dot((row - mv).T)
+#     S_W += class_scatter
+# print('Within-class scatter matrix: {} x {}'.format(S_W.shape[0], S_W.shape[1]))
+
 S_W = np.zeros((d, d))
 for label, mv in zip(range(num), mean_vecs):
-    class_scatter = np.zeros((d, d))
-    for row in X[y == label]:
-        row, mv = row.reshape(d, 1), mv.reshape(d, 1)
-        class_scatter += (row - mv).dot((row - mv).T)
+    class_scatter = np.cov(X_train_std[y_train == label], rowvar=False)  # np.cov默认对row进行转化，而非column
     S_W += class_scatter
 print('Within-class scatter matrix: {} x {}'.format(S_W.shape[0], S_W.shape[1]))
+
+# Step 3: 计算类间散布矩阵
+mean_overall = np.mean(X_train_std, axis=0)
+S_B = np.zeros((d, d))
+for i, mean_vec in enumerate(mean_vecs):
+    n = X[y == i, :].shape[0]
+    mean_vec = mean_vec.reshape(d, 1)
+    mean_overall = mean_overall.reshape(d, 1)
+    S_B += n * (mean_vec - mean_overall) @ (mean_vec - mean_overall).T
+print('Between-class scatter matrix: {} x {}'.format(S_B.shape[0], S_B.shape[1]))
+
+
+# Step 4: 计算广义特征值
+eigen_vals, eigen_vecs = np.linalg.eig(np.linalg.inv(S_W).dot(S_B))
+eigen_pairs = [(np.abs(eigen_vals[i]), eigen_vecs[:, i]) for i in range(len(eigen_vals))]
+eigen_pairs = sorted(eigen_pairs, key=lambda k:k[0], reverse=True)
+print('Eigenvalues in decreasing order:\n')
+for eigen_val in eigen_pairs:
+    print(eigen_val[0])
+
+# Variance Explained Ratios
+tot = sum(eigen_vals)
+discr = [(i / tot) for i in sorted(eigen_vals.real, reverse=True)]
+cum_discr = np.cumsum(discr)
+
+plt.bar(range(1, len(eigen_vals)+1), discr, alpha=0.5, align='center', label='individual explained variance')
+plt.step(range(1, len(eigen_vals)+1), cum_discr, where='mid', label='cumulative explained variance')
+plt.ylim([-0.1, 1.1])
+plt.ylabel('Discriminability Ratio')
+plt.xlabel('Linear Discriminants')
+plt.show()
+
+
+# Step 5: 利用判别能力最强的特征向量构建转换矩阵W
+w = np.hstack((eigen_pairs[0][1][:, np.newaxis].real,
+               eigen_pairs[1][1][:, np.newaxis].real))
+print('Matrix W:\n', w)
+
+# Step 6: 通过转换矩阵将样本映射到新的特征空间
+# Variance Explained Ratios
+tot = sum(eigen_vals)
+var_exp = [(i / tot) for i in sorted(eigen_vals, reverse=True)]
+cum_var_exp = np.cumsum(var_exp)
+
+plt.bar(range(1, len(eigen_vals)+1), var_exp, alpha=0.5, align='center', label='individual explained variance')
+plt.step(range(1, len(eigen_vals)+1), cum_var_exp, where='mid', label='cumulative explained variance')
+plt.xlabel('Principal Components')
+plt.ylabel('Explained Variance Ratio')
+plt.show()
+
+
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+lda = LinearDiscriminantAnalysis(n_components=2)
+X_train_lda = lda.fit_transform(X_train_std, y_train)
+lr = LogisticRegression()
+lr = lr.fit(X_train_lda, y_train)
+plot_decision_regions(X_train_lda, y_train, classifier=lr)
+plt.xlabel('LD 1')
+plt.ylabel('LD 2')
+plt.show()
+
+X_test_lda = lda.transform(X_test_std)
+plot_decision_regions(X_test_lda, y_test, classifier=lr)
+plt.xlabel('LD 1')
+plt.ylabel('LD 2')
+plt.legend(loc='best')
+plt.show()
+
+
+# ----------------------------------------------------------------------
+# 使用Python实现核主成分分析
+from scipy.spatial.distance import pdist, squareform
+from scipy import exp
+from scipy.linalg import eigh
+
+def rbf_kernel_pca(X, gamma, n_components)
+    '''
+    RBF kernel PCA implementation
+    :param X: ndarray, shape = [n_samples, n_features]
+    :param gamma: float, tuning parameter of the RBF kernel
+    :param n_components: int, number of pricinpal components to return
+    :return: ndarray, shape = [n_samples, n_features]
+        X_pc, projected dataset
+    '''
+    # Calculate pairwise squared Euclidean distances in the M * N dimensional dataset
+    sq_dists = pdist(X, 'sqeuclidean')
+
+    # Convert pairwise distances in to a square matrix
+    mat_sq_dists = squareform(sq_dists)
+
+    # Compute the symmetric kernel matrix
+    K = exp(-gamma * mat_sq_dists)
+
+    # Center the kernel matrix
+    N = K.shape[0]
+    one_n = np.ones((N, N)) / N
+    K = K - one_n.dot(K) - K.dot(one_n) + one_n.dot(K).dot(one_n)   # 使核矩阵更为聚集
+
+    # Obtaining eigenpairs from the centered kernel matrix
+    # numpy.eigh returns them in sorted order
+    eigvals, eigvecs = eigh(K)
+
+    # Collect the top k eigenvectors (projected samples)
+    X_pc = np.column_stack((eigvecs[:, -i] for i in range(1, n_components + 1)))
+
+    return X_pc
 
 
