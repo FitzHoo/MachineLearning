@@ -11,16 +11,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from sklearn.datasets import load_wine
+
 wine_data = load_wine()
 wine_df = pd.DataFrame(wine_data['data'], columns=wine_data['feature_names'])
 wine_df['target'] = wine_data['target']
 
 from sklearn.model_selection import train_test_split
+
 X, y = wine_df.iloc[:, :-1].values, wine_df.iloc[:, -1].values
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
 # Step 1:Standardization
 from sklearn.preprocessing import StandardScaler
+
 stdsc = StandardScaler()
 X_train_std = stdsc.fit_transform(X_train)
 X_test_std = stdsc.fit_transform(X_test)
@@ -36,8 +39,8 @@ tot = sum(eigen_vals)
 var_exp = [(i / tot) for i in sorted(eigen_vals, reverse=True)]
 cum_var_exp = np.cumsum(var_exp)
 
-plt.bar(range(1, len(eigen_vals)+1), var_exp, alpha=0.5, align='center', label='individual explained variance')
-plt.step(range(1, len(eigen_vals)+1), cum_var_exp, where='mid', label='cumulative explained variance')
+plt.bar(range(1, len(eigen_vals) + 1), var_exp, alpha=0.5, align='center', label='individual explained variance')
+plt.step(range(1, len(eigen_vals) + 1), cum_var_exp, where='mid', label='cumulative explained variance')
 plt.xlabel('Principal Components')
 plt.ylabel('Explained Variance Ratio')
 plt.show()
@@ -46,7 +49,7 @@ plt.show()
 eigen_pairs = [(np.abs(eigen_vals[i]), eigen_vecs[:, i]) for i in range(len(eigen_vals))]
 eigen_pairs.sort(reverse=True)
 w = np.hstack((eigen_pairs[0][1][:, np.newaxis],
-               eigen_pairs[1][1][:, np.newaxis]))   # 将行数组转变为列形式
+               eigen_pairs[1][1][:, np.newaxis]))  # 将行数组转变为列形式
 print('Matrix W:\n', w)
 
 # Transfer the original data(124 X 13) to pca space(124 X 2)
@@ -64,7 +67,6 @@ plt.xlabel('PCA 1')
 plt.ylabel('PCA 2')
 plt.legend(loc='best')
 plt.show()
-
 
 from matplotlib.colors import ListedColormap
 
@@ -98,6 +100,7 @@ def plot_decision_regions(X, y, classifier, test_idx=None, resolution=0.2):
 
     return plt.show()
 
+
 # 先对原始数据降维，然后基于降维后的数据进行逻辑回归
 from sklearn.linear_model import LogisticRegression
 from sklearn.decomposition import PCA
@@ -107,11 +110,9 @@ X_train_pca = pca.fit_transform(X_train_std)
 X_test_pca = pca.transform(X_test_std)
 
 lr = LogisticRegression()
-lr.fit(X_train_pca, y_train)   # 训练得到模型的参数
+lr.fit(X_train_pca, y_train)  # 训练得到模型的参数
 plot_decision_regions(X_train_pca, y_train, classifier=lr)
 plot_decision_regions(X_test_pca, y_test, classifier=lr)
-
-
 
 # LDA建模步骤
 # 前提：特征呈正态分布且特征间相互独立
@@ -158,11 +159,10 @@ for i, mean_vec in enumerate(mean_vecs):
     S_B += n * (mean_vec - mean_overall) @ (mean_vec - mean_overall).T
 print('Between-class scatter matrix: {} x {}'.format(S_B.shape[0], S_B.shape[1]))
 
-
 # Step 4: 计算广义特征值
 eigen_vals, eigen_vecs = np.linalg.eig(np.linalg.inv(S_W).dot(S_B))
 eigen_pairs = [(np.abs(eigen_vals[i]), eigen_vecs[:, i]) for i in range(len(eigen_vals))]
-eigen_pairs = sorted(eigen_pairs, key=lambda k:k[0], reverse=True)
+eigen_pairs = sorted(eigen_pairs, key=lambda k: k[0], reverse=True)
 print('Eigenvalues in decreasing order:\n')
 for eigen_val in eigen_pairs:
     print(eigen_val[0])
@@ -172,13 +172,12 @@ tot = sum(eigen_vals)
 discr = [(i / tot) for i in sorted(eigen_vals.real, reverse=True)]
 cum_discr = np.cumsum(discr)
 
-plt.bar(range(1, len(eigen_vals)+1), discr, alpha=0.5, align='center', label='individual explained variance')
-plt.step(range(1, len(eigen_vals)+1), cum_discr, where='mid', label='cumulative explained variance')
+plt.bar(range(1, len(eigen_vals) + 1), discr, alpha=0.5, align='center', label='individual explained variance')
+plt.step(range(1, len(eigen_vals) + 1), cum_discr, where='mid', label='cumulative explained variance')
 plt.ylim([-0.1, 1.1])
 plt.ylabel('Discriminability Ratio')
 plt.xlabel('Linear Discriminants')
 plt.show()
-
 
 # Step 5: 利用判别能力最强的特征向量构建转换矩阵W
 w = np.hstack((eigen_pairs[0][1][:, np.newaxis].real,
@@ -191,14 +190,14 @@ tot = sum(eigen_vals)
 var_exp = [(i / tot) for i in sorted(eigen_vals, reverse=True)]
 cum_var_exp = np.cumsum(var_exp)
 
-plt.bar(range(1, len(eigen_vals)+1), var_exp, alpha=0.5, align='center', label='individual explained variance')
-plt.step(range(1, len(eigen_vals)+1), cum_var_exp, where='mid', label='cumulative explained variance')
+plt.bar(range(1, len(eigen_vals) + 1), var_exp, alpha=0.5, align='center', label='individual explained variance')
+plt.step(range(1, len(eigen_vals) + 1), cum_var_exp, where='mid', label='cumulative explained variance')
 plt.xlabel('Principal Components')
 plt.ylabel('Explained Variance Ratio')
 plt.show()
 
-
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
 lda = LinearDiscriminantAnalysis(n_components=2)
 X_train_lda = lda.fit_transform(X_train_std, y_train)
 lr = LogisticRegression()
@@ -215,14 +214,14 @@ plt.ylabel('LD 2')
 plt.legend(loc='best')
 plt.show()
 
-
 # ----------------------------------------------------------------------
 # 使用Python实现核主成分分析
 from scipy.spatial.distance import pdist, squareform
 from scipy import exp
 from scipy.linalg import eigh
 
-def rbf_kernel_pca(X, gamma, n_components)
+
+def rbf_kernel_pca(X, gamma, n_components):
     '''
     RBF kernel PCA implementation
     :param X: ndarray, shape = [n_samples, n_features]
@@ -243,15 +242,85 @@ def rbf_kernel_pca(X, gamma, n_components)
     # Center the kernel matrix
     N = K.shape[0]
     one_n = np.ones((N, N)) / N
-    K = K - one_n.dot(K) - K.dot(one_n) + one_n.dot(K).dot(one_n)   # 使核矩阵更为聚集
+    K = K - one_n.dot(K) - K.dot(one_n) + one_n.dot(K).dot(one_n)  # 使核矩阵更为聚集
 
     # Obtaining eigenpairs from the centered kernel matrix
     # numpy.eigh returns them in sorted order
     eigvals, eigvecs = eigh(K)
 
     # Collect the top k eigenvectors (projected samples)
-    X_pc = np.column_stack((eigvecs[:, -i] for i in range(1, n_components + 1)))
+    alpha = np.column_stack((eigvecs[:, -i] for i in range(1, n_components + 1)))
 
-    return X_pc
+    lambdas = [eigvals[-i] for i in range(1, n_components + 1)]
+
+    return alpha, lambdas
 
 
+def plot_raw_data(X, y):
+    fig = plt.figure()
+    plt.scatter(X[y == 0, 0], X[y == 0, 1], color='red', marker='^', alpha=0.5)
+    plt.scatter(X[y == 1, 0], X[y == 1, 1], color='blue', marker='o', alpha=0.5)
+    return plt.show()
+
+
+def plot_linear_pca(X, y, n_components=2):
+    scikit_pca = PCA(n_components=n_components)
+    X_spca = scikit_pca.fit_transform(X)
+    n = X_spca.shape[0]
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(7, 3))
+    ax[0].scatter(X_spca[y == 0, 0], X_spca[y == 0, 1], color='red', marker='^', alpha=0.5)
+    ax[0].scatter(X_spca[y == 1, 0], X_spca[y == 1, 1], color='blue', marker='o', alpha=0.5)
+    ax[1].scatter(X_spca[y == 0, 0], np.zeros((n//2, 1)) + 0.02, color='red', marker='^', alpha=0.5)
+    ax[1].scatter(X_spca[y == 1, 0], np.zeros((n//2, 1)) - 0.02, color='blue', marker='o', alpha=0.5)
+    ax[0].set_xlabel('PC 1')
+    ax[0].set_ylabel("PC 2")
+    ax[1].set_ylim([-1, 1])
+    ax[1].set_yticks([])
+    ax[1].set_xlabel('PC1')
+    return plt.show()
+
+
+def plot_kernel_pca(X, y, gamma=15, n_components=2):
+    from matplotlib.ticker import FormatStrFormatter
+    X_kpca = rbf_kernel_pca(X, gamma=gamma, n_components=n_components)
+    n = X_kpca.shape[0]
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 4))
+    ax[0].scatter(X_kpca[y == 0, 0], X_kpca[y == 0, 1], color='red', marker='^', alpha=0.5)
+    ax[0].scatter(X_kpca[y == 1, 0], X_kpca[y == 1, 1], color='blue', marker='o', alpha=0.5)
+    ax[1].scatter(X_kpca[y == 0, 0], np.zeros((n//2, 1)) + 0.02, color='red', marker='^', alpha=0.5)
+    ax[1].scatter(X_kpca[y == 1, 0], np.zeros((n//2, 1)) - 0.02, color='blue', marker='o', alpha=0.5)
+    ax[0].set_xlabel('PC 1')
+    ax[0].set_ylabel("PC 2")
+    ax[1].set_ylim([-1, 1])
+    ax[1].set_yticks([])
+    ax[1].set_xlabel('PC1')
+    ax[0].xaxis.set_major_formatter(FormatStrFormatter('%0.1f'))
+    ax[1].xaxis.set_major_formatter(FormatStrFormatter('%0.1f'))
+    return plt.show()
+
+
+# Separate Half-Moon/Semilune
+from sklearn.datasets import make_moons
+X, y = make_moons(n_samples=100, random_state=123)
+plot_raw_data(X, y)
+plot_linear_pca(X, y)
+plot_kernel_pca(X, y)
+
+
+# Separate concentric circles
+from sklearn.datasets import make_circles
+X_, y_ = make_circles(n_samples=1000, random_state=123, noise=0.1, factor=0.2)
+plot_raw_data(X_, y_)
+plot_linear_pca(X_, y_)
+plot_kernel_pca(X_, y_)
+
+
+# kernal pca in scikit learn
+from sklearn.decomposition import KernelPCA
+X, y = make_moons(n_samples=100, random_state=123)
+scikit_kpca = KernelPCA(n_components=2, kernel='rbf', gamma=15)
+X_skernpca = scikit_kpca.fit_transform(X)
+fig = plt.figure()
+plt.scatter(X_skernpca[y==0, 0], X_skernpca[y==0, 1], color='red', marker='^', alpha=0.5)
+plt.scatter(X_skernpca[y==1, 0], X_skernpca[y==1, 1], color='blue', marker='o', alpha=0.5)
+plt.show()
