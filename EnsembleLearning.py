@@ -36,12 +36,12 @@ indice = np.argmax(p)
 
 from sklearn.base import BaseEstimator, ClassifierMixin, clone
 from sklearn.preprocessing import LabelEncoder
-from sklearn.externals import six
+from sklearn.externals import six     # 与Python2.7兼容
 from sklearn.pipeline import _name_estimators
 import operator
 
 
-class MajorityVoteClassifier(BaseEstimator, ClassifierMixin):
+class MajorityVoteClassifier(BaseEstimator, ClassifierMixin):   # 多重继承
     '''
     A majority vote ensemble classifier
 
@@ -100,7 +100,7 @@ class MajorityVoteClassifier(BaseEstimator, ClassifierMixin):
         avg_probas = np.average(probas, weights=self.weights, axis=0)
         return avg_probas
 
-    def get_params(self, deep=True):
+    def get_params(self, deep=True):   # Overrides method in BaseEstimator
         '''
         Get classifier parameters names for GridSearch
         '''
@@ -108,9 +108,46 @@ class MajorityVoteClassifier(BaseEstimator, ClassifierMixin):
             return super(MajorityVoteClassifier, self).get_params(deep=False)
         else:
             out = self.named_classifiers.copy()
-            for name, step in six.iteritems(self.named_classifiers):
-                for key, value in six.iteritems(step.get_params(deep=True)):
+            for name, step in self.named_classifiers.items():
+                for key, value in step.get_params(deep=True).items():
                     out['{}__{}'.format(name, key)] = value
+            # for name, step in six.iteritems(self.named_classifiers):
+            #     for key, value in six.iteritems(step.get_params(deep=True)):
+            #         out['{}__{}'.format(name, key)] = value
             return out
 
-    
+
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+iris = datasets.load_iris()
+X, y = iris.data[50:, [1, 2]], iris.target[50:]
+le = LabelEncoder()
+y = le.fit_transform(y)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=1)
+
+# 使用三种不同的分类器来训练数据：Logistic Regression, KNN, Decision Tree
+
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import Pipeline
+
+clf1 = LogisticRegression(penalty='l2', C=0.001, random_state=0)
+clf2 = DecisionTreeClassifier(max_depth=1, criterion='entropy', random_state=0)
+clf3 = KNeighborsClassifier(n_neighbors=1, p=2, metric='minkowski')
+pipe1 = Pipeline([
+    ['sc', StandardScaler()],
+    ['clf', clf1]
+])
+pipe3 = Pipeline([
+    ['sc', StandardScaler],
+    ['clf', clf3]
+])
+clf_labels = ['Logistic Regression', 'Decision Tree', 'KNN']
+print('10-fold cross validation: \n')
+for clf, label in zip([pipe1, clf2, pipe3], clf_labels):
+    scores = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10, scoring='roc_auc')
+    print('ROC AUC: {:.2f} (+/-) {:.2f} {}'.format(scores.mean(), scores.std(), label))
