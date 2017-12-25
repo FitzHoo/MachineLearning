@@ -98,21 +98,21 @@ class MajorityVoteClassifier(BaseEstimator, ClassifierMixin):   # 多重继承
         avg_probas = np.average(probas, weights=self.weights, axis=0)
         return avg_probas
 
-    def get_params(self, deep=True):   # Overrides method in BaseEstimator
-        '''
-        Get classifier parameters names for GridSearch
-        '''
-        if not deep:
-            return super(MajorityVoteClassifier, self).get_params(deep=False)    # 继承
-        else:
-            out = self.named_classifiers.copy()
-            for name, step in self.named_classifiers.items():
-                for key, value in step.get_params(deep=True).items():
-                    out['{}__{}'.format(name, key)] = value
-            # for name, step in six.iteritems(self.named_classifiers):
-            #     for key, value in six.iteritems(step.get_params(deep=True)):
-            #         out['{}__{}'.format(name, key)] = value
-            return out
+    # def get_params_(self, deep=True):   # Overrides method in BaseEstimator
+    #     '''
+    #     Get classifier parameters names for GridSearch
+    #     '''
+    #     if not deep:
+    #         return super(MajorityVoteClassifier, self).get_params(deep=False)    # 继承
+    #     else:
+    #         out = self.named_classifiers.copy()
+    #         for name, step in self.named_classifiers.items():
+    #             for key, value in step.get_params(deep=True).items():
+    #                 out['{}__{}'.format(name, key)] = value
+    #         # for name, step in six.iteritems(self.named_classifiers):
+    #         #     for key, value in six.iteritems(step.get_params(deep=True)):
+    #         #         out['{}__{}'.format(name, key)] = value
+    #         return out
 
 
 from sklearn import datasets
@@ -156,4 +156,35 @@ for clf, label in zip([pipe1, clf2, pipe3], clf_labels):
     print('ROC AUC: {:.2f} (+/-) {:.2f} {}'.format(scores.mean(), scores.std(), label))
 
 
+# 逻辑斯蒂回归于K近邻算法对数据缩放不敏感
+mv_clf = MajorityVoteClassifier(classifiers=[pipe1, clf2, pipe3])
+clf_labels += ['Majority Voting']
+all_clf = [pipe1, clf2, pipe3, mv_clf]
+for clf, label in zip(all_clf, clf_labels):
+    scores = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10, scoring='roc_auc')
+    print('ROC AUC: {:.2f} (+/-) {:.2f} {}'.format(scores.mean(), scores.std(), label))
+
+
+# 评估与调优集成分类器
+from sklearn.metrics import roc_curve
+from sklearn.metrics import auc
+colors = ['black', 'orange', 'blue', 'green']
+linestyles = [':', '--', '-.', '-']
+for clf, label, color, ls in zip(all_clf, clf_labels, colors, linestyles):
+    # assume the label of the positive class is 1
+    y_pred = clf.fit(X_train, y_train).predict_proba(X_test)[:, 1]
+    fpr, tpr, thresholds = roc_curve(y_true=y_test, y_score=y_pred)
+    roc_auc = auc(x=fpr, y=tpr)
+    plt.plot(fpr, tpr, color=color, ls=ls, label='{} (auc={:.2f})'.format(label, roc_auc))
+
+plt.legend(loc='best')
+plt.plot([0, 1], [0, 1], ls='--', color='gray', lw=2)
+plt.xlim([-0.1, 1.1])
+plt.ylim([-0.1, 1.1])
+plt.grid()
+plt.xlabel('false positive rate')
+plt.ylabel('true positive rate')
+plt.show()
+
+# Some bugs to be fixed in the future, and right now just jump over this chapter
 
