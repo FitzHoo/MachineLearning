@@ -10,8 +10,9 @@ import math
 
 
 def ensemble_error(n_classifier, error):
-    k_start = math.ceil(n_classifier / 2.0)
-    probs = [comb(n_classifier, k) * error ** k * (1-error) ** (n_classifier - k) for k in range(k_start, n_classifier+1)]
+    k_start = int(math.ceil(n_classifier / 2.0))
+    probs = [comb(n_classifier, k) * error ** k * (1-error) ** (n_classifier - k)
+             for k in range(k_start, n_classifier+1)]
     return sum(probs)
 
 error_range = np.arange(0.0, 1.01, 0.01)
@@ -35,10 +36,7 @@ p = np.average(ex, axis=0, weights=weights)
 indice = np.argmax(p)
 
 from sklearn.base import BaseEstimator, ClassifierMixin, clone
-from sklearn.preprocessing import LabelEncoder
-from sklearn.externals import six     # 与Python2.7兼容
 from sklearn.pipeline import _name_estimators
-import operator
 
 
 class MajorityVoteClassifier(BaseEstimator, ClassifierMixin):   # 多重继承
@@ -76,8 +74,8 @@ class MajorityVoteClassifier(BaseEstimator, ClassifierMixin):   # 多重继承
         # Use LabelEncoder to ensure class labels start with 0, which is important for np.argmax
         # call in self.predict
         self.lablenc_ = LabelEncoder()
-        self.lablenc_.fit(X, y)
-        self.classes = self.labelnc_.classes_
+        self.lablenc_.fit(y)
+        self.classes = self.lablenc_.classes_
         self.classifiers_ = []
         for clf in self.classifiers:
             fitted_clf = clone(clf).fit(X, self.lablenc_.transform(y))
@@ -105,7 +103,7 @@ class MajorityVoteClassifier(BaseEstimator, ClassifierMixin):   # 多重继承
         Get classifier parameters names for GridSearch
         '''
         if not deep:
-            return super(MajorityVoteClassifier, self).get_params(deep=False)
+            return super(MajorityVoteClassifier, self).get_params(deep=False)    # 继承
         else:
             out = self.named_classifiers.copy()
             for name, step in self.named_classifiers.items():
@@ -142,6 +140,11 @@ pipe1 = Pipeline([
     ['sc', StandardScaler()],
     ['clf', clf1]
 ])
+
+# pipe2 = Pipeline([
+#     ['clf', clf2]
+# ])
+
 pipe3 = Pipeline([
     ['sc', StandardScaler],
     ['clf', clf3]
@@ -151,3 +154,6 @@ print('10-fold cross validation: \n')
 for clf, label in zip([pipe1, clf2, pipe3], clf_labels):
     scores = cross_val_score(estimator=clf, X=X_train, y=y_train, cv=10, scoring='roc_auc')
     print('ROC AUC: {:.2f} (+/-) {:.2f} {}'.format(scores.mean(), scores.std(), label))
+
+
+
