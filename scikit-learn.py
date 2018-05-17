@@ -22,7 +22,7 @@ X_test_std = sc.transform(X_test)
 
 # 模型训练
 from sklearn.linear_model import Perceptron
-ppn = Perceptron(n_iter=40, eta0=0.1, random_state=0)
+ppn = Perceptron(max_iter=40, eta0=0.1, random_state=0)
 ppn.fit(X_train_std, y_train)
 
 y_pred = ppn.predict(X_test_std)
@@ -72,14 +72,16 @@ def plot_decision_regions(X, y, classifier, test_idx=None, resolution=0.2):
     plt.ylabel('petal width [Standardized]')
     plt.legend(loc='upper left')
 
-    return plt.show()
-
-
+# Perceptron
 X_combined_std = np.vstack((X_train_std, X_test_std))
 y_combined = np.hstack((y_train, y_test))
 plot_decision_regions(X=X_combined_std, y=y_combined, classifier=ppn,
                       test_idx=range(105, 150))
-
+plt.title('Perceptron')
+plt.xlabel('petal length [standardized]')
+plt.ylabel('petal width [standardized]')
+plt.legend(loc='upper left')
+plt.show()
 
 # Logistic Regression
 from sklearn.linear_model import LogisticRegression
@@ -87,6 +89,7 @@ lr = LogisticRegression(C=1000.0, random_state=0)
 lr.fit(X_train_std, y_train)
 plot_decision_regions(X_combined_std, y_combined, classifier=lr,
                       test_idx=range(105, 150))
+plt.title('Logistic Regression')
 plt.xlabel('petal length [Standardized]')
 plt.ylabel('petal width [Standardized]')
 plt.legend(loc='upper left')
@@ -119,6 +122,7 @@ from sklearn.svm import SVC
 svm = SVC(kernel='linear', C=1.0, random_state=0)
 svm.fit(X_train_std, y_train)
 plot_decision_regions(X_combined_std, y_combined, classifier=svm, test_idx=range(105, 150))
+plt.title('SVM')
 plt.xlabel('petal length [Standardized]')
 plt.ylabel('petal width [Standardized]')
 plt.legend(loc='upper left')
@@ -182,6 +186,7 @@ tree.fit(X_train, y_train)
 X_combined = np.vstack((X_train, X_test))
 y_combined = np.hstack((y_train, y_test))
 plot_decision_regions(X_combined, y_combined, classifier=tree, test_idx=range(105, 150))
+plt.title("Decision Tree")
 plt.xlabel('petal length [cm]')
 plt.ylabel('petal width [cm]')
 plt.legend(loc='upper left')
@@ -193,6 +198,7 @@ from sklearn.ensemble import RandomForestClassifier
 forest = RandomForestClassifier(criterion='entropy', n_estimators=10, random_state=1, n_jobs=2)
 forest.fit(X_train, y_train)
 plot_decision_regions(X_combined, y_combined, classifier=forest, test_idx=range(105, 150))
+plt.title("Random Forest")
 plt.xlabel('petal length')
 plt.ylabel('petal width')
 plt.legend(loc='upper left')
@@ -205,6 +211,7 @@ from sklearn.neighbors import KNeighborsClassifier
 knn = KNeighborsClassifier(n_neighbors=5, p=2, metric='minkowski')
 knn.fit(X_train_std, y_train)
 plot_decision_regions(X_combined_std, y_combined, classifier=knn, test_idx=range(105, 150))
+plt.title("KNN")
 plt.xlabel('petal length [Standadized]')
 plt.ylabel('petal width [Standardized]')
 plt.show()
