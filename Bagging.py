@@ -92,4 +92,3 @@ plot_contourf_zone(classifiers={'Decision Tree': tree, 'AdaBoost': ada})
 
 
 
-
