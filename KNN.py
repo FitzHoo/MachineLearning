@@ -116,21 +116,3 @@ def handwritingClassTest():
     print("Total number of errors is {} and error rate is {}".format(errorCount, errorCount/mTest))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
