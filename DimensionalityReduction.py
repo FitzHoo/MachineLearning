@@ -282,7 +282,7 @@ def plot_linear_pca(X, y, n_components=2):
 
 def plot_kernel_pca(X, y, gamma=15, n_components=2):
     from matplotlib.ticker import FormatStrFormatter
-    X_kpca = rbf_kernel_pca(X, gamma=gamma, n_components=n_components)
+    X_kpca = rbf_kernel_pca(X, gamma=gamma, n_components=n_components)[0]
     n = X_kpca.shape[0]
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 4))
     ax[0].scatter(X_kpca[y == 0, 0], X_kpca[y == 0, 1], color='red', marker='^', alpha=0.5)
@@ -292,7 +292,7 @@ def plot_kernel_pca(X, y, gamma=15, n_components=2):
     ax[0].set_xlabel('PC 1')
     ax[0].set_ylabel("PC 2")
     ax[1].set_ylim([-1, 1])
-    ax[1].set_yticks([])
+    ax[1].set_yticks([])      # 不设置y轴标签
     ax[1].set_xlabel('PC1')
     ax[0].xaxis.set_major_formatter(FormatStrFormatter('%0.1f'))
     ax[1].xaxis.set_major_formatter(FormatStrFormatter('%0.1f'))
@@ -324,3 +324,4 @@ fig = plt.figure()
 plt.scatter(X_skernpca[y==0, 0], X_skernpca[y==0, 1], color='red', marker='^', alpha=0.5)
 plt.scatter(X_skernpca[y==1, 0], X_skernpca[y==1, 1], color='blue', marker='o', alpha=0.5)
 plt.show()
+
