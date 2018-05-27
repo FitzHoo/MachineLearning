@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "/Users/huliangyong/miniconda3/envs/pytest/bin/python"
+    "python.pythonPath": "/Users/huliangyong/miniconda3/envs/pytest/bin/python",
+    "git.ignoreLimitWarning": true
 }
