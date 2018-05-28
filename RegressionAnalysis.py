@@ -147,7 +147,8 @@ print('Slope: {:.3f}'.format(ransac.estimator_.coef_[0]))
 print('Intercept: {:.3f}'.format(ransac.estimator_.intercept_))
 
 # 线性回归模型性能的评估
-from sklearn.cross_validation import train_test_split
+# from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 X, y = data, target
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 slr = LinearRegression()
