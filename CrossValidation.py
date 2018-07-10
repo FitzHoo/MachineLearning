@@ -3,6 +3,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_iris
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
+import warnings
+warnings.filterwarnings(action='ignore')
 
 iris = load_iris()
 X, y = iris.data, iris.target
@@ -45,7 +47,7 @@ fit_params = {
 searchCV = GridSearchCV(new_pipeline, cv=5, param_grid=param_grid, fit_params=fit_params)
 searchCV.fit(train_X, train_y)
 
-print(searchCV.best_params_)
+print('The best parameters: \n', searchCV.best_params_)
 print(searchCV.cv_results_['mean_train_score'])
 print(searchCV.cv_results_['mean_test_score'])
 
