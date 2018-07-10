@@ -1,7 +1,22 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+import seaborn as sns
+# 线性回归模型性能的评估
+from sklearn.cross_validation import train_test_split
 from sklearn.datasets import load_boston
+from sklearn.ensemble import RandomForestRegressor
+# 使用scikit-learn估计回归模型的系数
+from sklearn.linear_model import (ElasticNet, Lasso, LinearRegression,
+                                  RANSACRegressor, Ridge)
+# 均方误差衡量模型好坏
+from sklearn.metrics import mean_squared_error, r2_score
+# 增加一个二次多项式项
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+# 随机森林可以被理解为分段线性函数的集成
+# Decision Tree & Information Gain
+from sklearn.tree import DecisionTreeRegressor
+
 boston = load_boston()
 
 data = boston['data']
@@ -11,10 +26,6 @@ feature_names = boston['feature_names']
 df = pd.DataFrame(data, columns=feature_names)
 print(df.head())
 
-# Exploratory Data Analysis
-# Seaborn pairplot
-import matplotlib.pyplot as plt
-import seaborn as sns
 sns.set(style='whitegrid', context='notebook')
 
 cols = ['LSTAT', 'INDUS', 'NOX', 'RM']
@@ -68,7 +79,6 @@ class LinearRegressionGD:
 X = df[['RM']].values
 y = target
 
-from sklearn.preprocessing import StandardScaler
 sc_x = StandardScaler()
 sc_y = StandardScaler()
 
@@ -103,8 +113,6 @@ print("Price in $1000\'s: {:.3f}".format(sc_y.inverse_transform(price_std)[0]))
 print('Slope: {:.3f}'.format(lr.w_[1]))
 print('Intercept: {:.3f}'.format(lr.w_[0]))
 
-# 使用scikit-learn估计回归模型的系数
-from sklearn.linear_model import LinearRegression
 slr = LinearRegression()
 slr.fit(X, y)
 print('Slope: {:.3f}'.format(slr.coef_[0]))
@@ -121,7 +129,6 @@ lin_reg_plot(X, y, slr)
 # 4）使用内点集合来估计模型的误差
 # 5）如果模型性能达到了用户设定的阈值或者迭代达到了预定次数，则算法终止，否则跳转到第一步
 
-from sklearn.linear_model import RANSACRegressor
 ransac = RANSACRegressor(base_estimator=LinearRegression(), 
                         max_trials=100,
                         min_samples=50,
@@ -146,8 +153,6 @@ plt.show()
 print('Slope: {:.3f}'.format(ransac.estimator_.coef_[0]))
 print('Intercept: {:.3f}'.format(ransac.estimator_.intercept_))
 
-# 线性回归模型性能的评估
-from sklearn.cross_validation import train_test_split
 X, y = data, target
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 slr = LinearRegression()
@@ -165,8 +170,6 @@ plt.hlines(y=0, xmin=-10, xmax=50, lw=2, color='red')
 plt.xlim([-10, 50])
 plt.show()
 
-# 均方误差衡量模型好坏
-from sklearn.metrics import mean_squared_error, r2_score
 print('MSE train: {:.3f} vs. test: {:.3f}'.format(
     mean_squared_error(y_train, y_train_pred),
     mean_squared_error(y_test, y_test_pred)))
@@ -184,7 +187,6 @@ print('MSE train: {:.3f} vs. test: {:.3f}'.format(
 
 # 正则化项不影响截距项w0
 
-from sklearn.linear_model import Ridge, Lasso, ElasticNet
 ridge = Ridge(alpha=1.0)
 lasso = Lasso(alpha=1.0)
 elastic_net = ElasticNet(alpha=1.0, l1_ratio=0.5)    # 如果l1_ratio设置为1，则等同于Lasso回归
@@ -193,8 +195,6 @@ elastic_net = ElasticNet(alpha=1.0, l1_ratio=0.5)    # 如果l1_ratio设置为1�
 # 线性回归模型的曲线化--多项式回归
 #
 
-# 增加一个二次多项式项
-from sklearn.preprocessing import PolynomialFeatures
 X = np.array([258, 270, 294, 
             320, 342, 368,
             396, 446, 480,
@@ -299,9 +299,6 @@ plt.show()
 # 使用随机森林处理非线性关系
 # 
 
-# 随机森林可以被理解为分段线性函数的集成
-# Decision Tree & Information Gain
-from sklearn.tree import DecisionTreeRegressor
 X = df[['LSTAT']].values
 y = target
 tree = DecisionTreeRegressor(max_depth=3)
@@ -315,7 +312,6 @@ lin_reg_plot(X[sort_idx], y[sort_idx], tree)
 X, y = data, target
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=1)
 
-from sklearn.ensemble import RandomForestRegressor
 forest = RandomForestRegressor(n_estimators=1000, 
                                 criterion='mse',
                                 random_state=1,
@@ -344,4 +340,3 @@ plt.legend(loc='upper left')
 plt.hlines(y=0, xmin=-10, xmax=50, lw=2, color='red')
 plt.xlim([-10, 50])
 plt.show()
-
