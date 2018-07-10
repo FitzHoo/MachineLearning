@@ -24,20 +24,24 @@ print(scores)
 print('Mean Absolute Error {:.2f}'.format(-1 * scores.mean()))
 
 from xgboost import XGBClassifier
-new_pipeline = Pipeline([('imputer', Imputer()), ('xgboost', XGBClassifier)])
+new_pipeline = Pipeline([('imputer', Imputer()), ('xgbrg', XGBClassifier())])
 
 from sklearn.model_selection import GridSearchCV
+# 寻优的参数选择
 param_grid = {
     'xgbrg__n_estimators': [10, 50, 100, 500],
     'xgbrg__learning_rate': [0.1, 0.5, 1],
 }
 
+# dict, optional
+# Parameters to pass to fit method
 fit_params = {
     'xgbrg__eval_set': [(test_X, test_y)],
     'xgbrg__early_stopping_rounds': 10,
     'xgbrg__verbose': False
 }
 
+# 5-fold cross validation by passing the argument cv=5
 searchCV = GridSearchCV(new_pipeline, cv=5, param_grid=param_grid, fit_params=fit_params)
 searchCV.fit(train_X, train_y)
 
