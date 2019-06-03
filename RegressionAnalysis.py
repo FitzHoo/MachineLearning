@@ -48,12 +48,13 @@ hm = sns.heatmap(
 
 plt.show()
 
+
 class LinearRegressionGD:
 
     def __init__(self, eta=0.001, n_iter=20):
         self.eta = eta
         self.n_iter = n_iter
-    
+
     def fit(self, X, y):
         y = y.reshape((-1, ))    # 这一步很关键
         self.w_ = np.zeros(1+X.shape[1])
@@ -62,7 +63,7 @@ class LinearRegressionGD:
         for i in range(self.n_iter):
             output = self.net_input(X)
             errors = (y - output)
-            self.w_[1: ] += self.eta * X.T.dot(errors)
+            self.w_[1:] += self.eta * X.T.dot(errors)
             self.w_[0] += self.eta * errors.sum()
             cost = (errors ** 2).sum() / 2
             self.cost_.append(cost)
@@ -74,6 +75,7 @@ class LinearRegressionGD:
 
     def predict(self, X):
         return self.net_input(X)
+
 
 # 为了使梯度下降算法收敛性更佳，对相关变量做标准化处理
 X = df[['RM']].values
@@ -102,10 +104,12 @@ def lin_reg_plot(X, y, model):
     plt.ylabel('Price in $1000\'s [MEDV] (Standardized)')
     return plt.show()
 
+
 lin_reg_plot(X_std, y_std, lr)
 
 # 预测带有五个房间的房屋价格
-num_rooms_std = sc_x.transform(np.array([5.0]).reshape(-1, 1))  # transform expected 2D array
+# transform expected 2D array
+num_rooms_std = sc_x.transform(np.array([5.0]).reshape(-1, 1))
 price_std = lr.predict(num_rooms_std)
 print("Price in $1000\'s: {:.3f}".format(sc_y.inverse_transform(price_std)[0]))
 
@@ -129,21 +133,23 @@ lin_reg_plot(X, y, slr)
 # 4）使用内点集合来估计模型的误差
 # 5）如果模型性能达到了用户设定的阈值或者迭代达到了预定次数，则算法终止，否则跳转到第一步
 
-ransac = RANSACRegressor(base_estimator=LinearRegression(), 
-                        max_trials=100,
-                        min_samples=50,
-                        # residual_metric=lambda x: np.sum(np.abs(x), axis=1),
-                        loss='absolute_loss',
-                        residual_threshold=5.0,
-                        random_state=0)
-ransac.fit(X, y)                        
+ransac = RANSACRegressor(base_estimator=LinearRegression(),
+                         max_trials=100,
+                         min_samples=50,
+                         # residual_metric=lambda x: np.sum(np.abs(x), axis=1),
+                         loss='absolute_loss',
+                         residual_threshold=5.0,
+                         random_state=0)
+ransac.fit(X, y)
 
 inlier_mask = ransac.inlier_mask_
 outlier_mask = np.logical_not(inlier_mask)
 line_X = np.arange(3, 10, 1)
 line_y_ransac = ransac.predict(line_X[:, np.newaxis])
-plt.scatter(X[inlier_mask], y[inlier_mask], c='blue', marker='o', label='Inliers')
-plt.scatter(X[outlier_mask], y[outlier_mask], c='lightgreen', marker='s', label='Outliers')
+plt.scatter(X[inlier_mask], y[inlier_mask],
+            c='blue', marker='o', label='Inliers')
+plt.scatter(X[outlier_mask], y[outlier_mask],
+            c='lightgreen', marker='s', label='Outliers')
 plt.plot(line_X, line_y_ransac, color='red')
 plt.xlabel('Average number of rooms [RM]')
 plt.ylabel('Price in $1000\'s [MEDV]')
@@ -157,15 +163,18 @@ print('Intercept: {:.3f}'.format(ransac.estimator_.intercept_))
 # from sklearn.cross_validation import train_test_split
 from sklearn.model_selection import train_test_split
 X, y = data, target
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=0)
 slr = LinearRegression()
 slr.fit(X_train, y_train)
 y_train_pred = slr.predict(X_train)
 y_test_pred = slr.predict(X_test)
 
 # 绘制预测值的残差
-plt.scatter(y_train_pred, y_train_pred-y_train, c='blue', marker='o', label='Training Data')
-plt.scatter(y_test_pred, y_test_pred -  y_test, c='lightgreen', marker='s', label='Test Data')
+plt.scatter(y_train_pred, y_train_pred-y_train,
+            c='blue', marker='o', label='Training Data')
+plt.scatter(y_test_pred, y_test_pred - y_test,
+            c='lightgreen', marker='s', label='Test Data')
 plt.xlabel('Predicted values')
 plt.ylabel('Residuals')
 plt.legend(loc='upper left')
@@ -192,20 +201,21 @@ print('MSE train: {:.3f} vs. test: {:.3f}'.format(
 
 ridge = Ridge(alpha=1.0)
 lasso = Lasso(alpha=1.0)
-elastic_net = ElasticNet(alpha=1.0, l1_ratio=0.5)    # 如果l1_ratio设置为1，则等同于Lasso回归
+# 如果l1_ratio设置为1，则等同于Lasso回归
+elastic_net = ElasticNet(alpha=1.0, l1_ratio=0.5)
 
-# 
+#
 # 线性回归模型的曲线化--多项式回归
 #
 
-X = np.array([258, 270, 294, 
-            320, 342, 368,
-            396, 446, 480,
-            586])[:, np.newaxis]
+X = np.array([258, 270, 294,
+              320, 342, 368,
+              396, 446, 480,
+              586])[:, np.newaxis]
 y = np.array([236, 234.4, 252.8,
-            298.6, 314.2, 342.2,
-            360.8, 368, 391.2,
-            390.8])
+              298.6, 314.2, 342.2,
+              360.8, 368, 391.2,
+              390.8])
 
 lr = LinearRegression()
 pr = LinearRegression()
@@ -242,7 +252,7 @@ print('Training MSE Linear: {:.3f} vs. Quadratic: {:.3f}'.format(
 
 #
 # 房屋数据集中的非线性关系建模
-# 
+#
 X = df[['LSTAT']].values
 y = target
 regr = LinearRegression()
@@ -271,9 +281,12 @@ cubic_r2 = r2_score(y, regr.predict(X_cubic))   # Original data
 
 # Plot Results
 plt.scatter(X, y, label='training points', color='lightgray')
-plt.plot(X_fit, y_lin_fit, label='linear(d=1), $R^2={:.3f}$'.format(linear_r2), color='blue', lw=2, ls=':')
-plt.plot(X_fit, y_quad_fit, label='quadratic(d=2), $R^2={:.3f}$'.format(quadratic_r2), color='red', lw=2, ls='-')
-plt.plot(X_fit, y_cubic_fit, label='cubic(d=3), $R^2={:.3f}$'.format(cubic_r2), color='green', lw=2, ls='--')
+plt.plot(X_fit, y_lin_fit, label='linear(d=1), $R^2={:.3f}$'.format(
+    linear_r2), color='blue', lw=2, ls=':')
+plt.plot(X_fit, y_quad_fit, label='quadratic(d=2), $R^2={:.3f}$'.format(
+    quadratic_r2), color='red', lw=2, ls='-')
+plt.plot(X_fit, y_cubic_fit, label='cubic(d=3), $R^2={:.3f}$'.format(
+    cubic_r2), color='green', lw=2, ls='--')
 plt.xlabel('Lower status of the population[LSTAT] %')
 plt.ylabel('Price in $1000\'s [MEDV]')
 plt.legend(loc='best')
@@ -292,15 +305,16 @@ linear_r2 = r2_score(y_sqrt, regr.predict(X_log))
 
 # Plot results
 plt.scatter(X_log, y_sqrt, label='training points', color='lightgray')
-plt.plot(X_fit, y_lin_fit, label='linear(d=1), $R^2={:.3f}$'.format(linear_r2), color='blue', lw=2, ls=':')
+plt.plot(X_fit, y_lin_fit, label='linear(d=1), $R^2={:.3f}$'.format(
+    linear_r2), color='blue', lw=2, ls=':')
 plt.xlabel('log(Lower status of the population(%))')
 plt.ylabel("$\sqrt{Price \; in \; \$1000\'s [MEDV]}$")
 plt.legend(loc='lower left')
 plt.show()
 
-# 
+#
 # 使用随机森林处理非线性关系
-# 
+#
 
 X = df[['LSTAT']].values
 y = target
@@ -313,12 +327,13 @@ lin_reg_plot(X[sort_idx], y[sort_idx], tree)
 # 所有决策树预测值的平均数作为预测目标变量的值
 
 X, y = data, target
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=1)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.4, random_state=1)
 
-forest = RandomForestRegressor(n_estimators=1000, 
-                                criterion='mse',
-                                random_state=1,
-                                n_jobs=-1)
+forest = RandomForestRegressor(n_estimators=1000,
+                               criterion='mse',
+                               random_state=1,
+                               n_jobs=-1)
 
 forest.fit(X_train, y_train)
 y_train_pred = forest.predict(X_train)
@@ -335,8 +350,10 @@ print('MSE train: {:.3f} vs. test: {:.3f}'.format(
 
 # 绘制预测值的残差
 # 残差没有完全随机分布在中心点附近，这说明模型无法捕获所有的解释信息
-plt.scatter(y_train_pred, y_train_pred-y_train, c='black', marker='o', label='Training Data')
-plt.scatter(y_test_pred, y_test_pred -  y_test, c='lightgreen', marker='s', label='Test Data')
+plt.scatter(y_train_pred, y_train_pred-y_train,
+            c='black', marker='o', label='Training Data')
+plt.scatter(y_test_pred, y_test_pred - y_test,
+            c='lightgreen', marker='s', label='Test Data')
 plt.xlabel('Predicted values')
 plt.ylabel('Residuals')
 plt.legend(loc='upper left')
