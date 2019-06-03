@@ -34,7 +34,8 @@ inv_size_mapping = {v: k for k, v in size_mapping.items()}
 
 df['size'] = df['size'].map(size_mapping)
 
-class_mapping = {label: idx for idx, label in enumerate(np.unique(df['classlabel']))}
+class_mapping = {label: idx for idx,
+                                label in enumerate(np.unique(df['classlabel']))}
 inv_class_mapping = {v: k for k, v in class_mapping.items()}
 
 df['classlabel'] = df['classlabel'].map(class_mapping)
@@ -62,7 +63,8 @@ wine_df['target'] = wine_data['target']
 from sklearn.model_selection import train_test_split
 
 X, y = wine_df.iloc[:, :-1].values, wine_df.iloc[:, -1].values
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=0)
 
 # Normalization
 from sklearn.preprocessing import MinMaxScaler
@@ -105,7 +107,8 @@ plt.xlim([10 ** (-5), 10 ** 5])
 plt.ylabel('weight coefficient')
 plt.xlabel('C')
 plt.xscale('log')
-ax.legend(loc='upper center', bbox_to_anchor=(1.38, 1.03), ncol=1, fancybox=True)
+ax.legend(loc='upper center', bbox_to_anchor=(
+    1.38, 1.03), ncol=1, fancybox=True)
 plt.show()
 
 # Sequential Backward Selection
@@ -129,7 +132,8 @@ class SBS(object):
         dim = X_train.shape[1]  # feature number
         self.indices_ = tuple(range(dim))
         self.subsets_ = [self.indices_]
-        score = self._calc_score(X_train, y_train, X_test, y_test, self.indices_)
+        score = self._calc_score(
+            X_train, y_train, X_test, y_test, self.indices_)
         self.scores_ = [score]
 
         while dim > self.k_features:
@@ -196,10 +200,12 @@ forest.fit(X_train, y_train)
 importances = forest.feature_importances_
 indicies = np.argsort(importances)[::-1]
 for f in range(X_train.shape[1]):
-    print('%2d) %-*s %f' % (f + 1, 30, feat_labels[f], importances[indicies[f]]))
+    print('%2d) %-*s %f' %
+          (f + 1, 30, feat_labels[f], importances[indicies[f]]))
 
 plt.title("Feature Importances")
-plt.bar(range(X_train.shape[1]), importances[indicies], color='lightblue', align='center')
+plt.bar(range(X_train.shape[1]), importances[indicies],
+        color='lightblue', align='center')
 plt.xticks(range(X_train.shape[1]), feat_labels, rotation=90)
 plt.tight_layout()
 plt.show()
